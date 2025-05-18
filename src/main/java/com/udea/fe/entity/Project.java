@@ -28,7 +28,7 @@ public class Project {
     private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private ProjectStatus status;
 
     @ManyToOne
     @JoinColumn(name = "created_by")
