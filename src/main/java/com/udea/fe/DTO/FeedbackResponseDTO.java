@@ -4,19 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class NotificationDTO {
+public class FeedbackResponseDTO {
+
     private Long id;
-    private Long userId;
-    private String message;
-    private String type;
-    private boolean isRead;
-    private LocalDateTime createdAt;
-    private LocalDateTime readAt;
+    private String comment;
+    private LocalDateTime responseDate;
+    private Long feedbackId;
+    private Long createdById;
+
 }

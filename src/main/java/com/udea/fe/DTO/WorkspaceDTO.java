@@ -7,13 +7,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class FeedbackDTO {
+@AllArgsConstructor
+public class WorkspaceDTO {
     private Long id;
-    private String comment;
-    private Integer rating;
-    private Long taskId;
-    private Long createdById;
-    private Long parentFeedbackId;
+    private String name;
+    private String description;
+    private Long projectId;
 }
