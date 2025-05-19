@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class NotificationDTO {
     private Long id;
+    private Long userId;
     private String message;
     private String type;
     private boolean isRead;
     private LocalDateTime createdAt;
     private LocalDateTime readAt;
-    private Long userId;
 }
