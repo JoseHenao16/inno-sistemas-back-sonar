@@ -3,22 +3,23 @@ package com.udea.fe.controller;
 import com.udea.fe.DTO.AuthResponse;
 import com.udea.fe.DTO.LoginRequest;
 import com.udea.fe.DTO.UserDTO;
+import com.udea.fe.entity.User;
+import com.udea.fe.repository.UserRepository;
 import com.udea.fe.security.service.AuthService;
-import com.udea.fe.service.UserService;
-import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class AuthController {
 
   private final AuthService authService;
-  private final UserService userService;
+  private final UserRepository userRepository;
 
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
@@ -36,16 +37,34 @@ public class AuthController {
     }
   }
 
-  /* @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
-    } */
+  @GetMapping("/me")
+public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
+    System.out.println("\n ---> Obtener usuario autenticado: ");
+    if (authentication == null || !authentication.isAuthenticated()) {
+      System.out.println("Usuario no autenticado");
+      return ResponseEntity.status(401).build();
+    }
 
-  @PostMapping("/register")
-  public ResponseEntity<UserDTO> createUser(
-    @Valid @RequestBody UserDTO userDTO
-  ) {
-    UserDTO createdUser = userService.createUser(userDTO);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-  }
+    Object principal = authentication.getPrincipal();
+
+    System.out.println("Principal: " + principal);
+    System.out.println("Tipo de principal: " + principal.getClass());
+
+    if (principal instanceof org.springframework.security.core.userdetails.User) {
+      String username = ((org.springframework.security.core.userdetails.User) principal).getUsername();
+
+      User userEntity = userRepository.findByEmail(username).orElse(null);
+
+      if (userEntity == null) {
+          return ResponseEntity.status(404).build();
+      }
+
+      UserDTO userDto = new UserDTO(userEntity);
+      System.out.println("Usuario autenticado: " + userDto);
+      return ResponseEntity.ok(userDto);
+    } else {
+      return ResponseEntity.status(401).build();
+    }
+}
+
 }
