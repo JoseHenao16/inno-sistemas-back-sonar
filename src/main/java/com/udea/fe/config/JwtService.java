@@ -5,6 +5,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.udea.fe.entity.User;
+
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
@@ -22,14 +24,21 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String generateToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+    public String generateToken(User user) {
+    return Jwts.builder()
+            .setSubject(user.getEmail())
+            .claim("id", user.getUserId())
+            .claim("name", user.getName())
+            .claim("email", user.getEmail())
+            .claim("dni", user.getDni())
+            .claim("role", user.getRole())
+            .claim("status", user.getStatus())
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .compact();
+}
+
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
