@@ -3,12 +3,10 @@ package com.udea.fe.security.service;
 import com.udea.fe.DTO.AuthResponse;
 import com.udea.fe.DTO.LoginRequest;
 import com.udea.fe.config.JwtService;
-/* import com.udea.fe.entity.Status;
 import com.udea.fe.entity.User;
-import com.udea.fe.repository.UserRepository; */
+import com.udea.fe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UserDetails;
 /* import org.springframework.security.crypto.password.PasswordEncoder; */
 import org.springframework.stereotype.Service;
 
@@ -16,10 +14,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-  /* private final PasswordEncoder passwordEncoder; */
+  private final UserRepository userRepository;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
-  private final UserDetailsServiceImpl userDetailsService;
 
   public AuthResponse login(LoginRequest request) {
     authenticationManager.authenticate(
@@ -29,24 +26,20 @@ public class AuthService {
       )
     );
 
-    UserDetails userDetails = userDetailsService.loadUserByUsername(
-      request.getEmail()
-    );
-    String token = jwtService.generateToken(userDetails.getUsername());
-    return new AuthResponse(token);
-  }
-  /* public AuthResponse register(RegisterRequest request) {
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .dni(request.getDni())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
-                .status(Status.ACTIVE)
-                .build();
+    User user = userRepository
+      .findByEmail(request.getEmail())
+      .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        userRepository.save(user);
-        String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token);
-    } */
+    String token = jwtService.generateToken(user.getEmail());
+
+    return new AuthResponse(
+      token,
+      user.getUserId(),
+      user.getName(),
+      user.getEmail(),
+      user.getDni(),
+      user.getRole().name(),
+      user.getStatus().name()
+    );
+  }
 }
