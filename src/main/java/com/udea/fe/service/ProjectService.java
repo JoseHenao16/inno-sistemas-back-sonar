@@ -153,12 +153,16 @@ public class ProjectService {
 
   public List<ProjectDTO> getProjectsByUserId(Long userId) {
     List<UserTeam> userTeams = userTeamRepository.findByIdUserId(userId);
-    Set<Project> projects = userTeams
+    Set<Project> teamProjects = userTeams
       .stream()
       .map(ut -> ut.getTeam().getProject())
       .collect(Collectors.toSet());
 
-    return projects
+    List<Project> createdProjects = projectRepository.findByCreatedByUserId(userId);
+
+    teamProjects.addAll(createdProjects);
+
+    return teamProjects
       .stream()
       .map(projectMapper::toDTO)
       .collect(Collectors.toList());
