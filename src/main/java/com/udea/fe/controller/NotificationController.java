@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -19,9 +20,11 @@ public class NotificationController {
     public ResponseEntity<NotificationDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(notificationService.getById(id));
     }
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<NotificationDTO>> getByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(notificationService.getByUserId(userId));
+
+    @GetMapping("/user/")
+    public ResponseEntity<List<NotificationDTO>> getByUserId(Principal principal) {
+        String userEmail = principal.getName();
+        return ResponseEntity.ok(notificationService.getByUser(userEmail));
     }
 
     @DeleteMapping("/{id}/delete")

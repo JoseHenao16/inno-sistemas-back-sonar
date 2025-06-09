@@ -1,5 +1,6 @@
 package com.udea.fe.service;
 
+import com.udea.fe.DTO.NotificationDTO;
 import com.udea.fe.DTO.SubmissionRequestDTO;
 import com.udea.fe.DTO.SubmissionResponseDTO;
 import com.udea.fe.entity.Role;
@@ -30,6 +31,9 @@ public class SubmissionService {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private NotificationService notificationService;
+
   public SubmissionResponseDTO createSubmission(SubmissionRequestDTO request) {
     Submission submission = new Submission();
     submission.setContent(request.getContent());
@@ -51,6 +55,13 @@ public class SubmissionService {
     response.setSubmittedAt(saved.getSubmittedAt());
     response.setTaskId(saved.getTask().getTaskId());
     response.setUserId(saved.getUser().getUserId());
+
+    NotificationDTO notification = new NotificationDTO();
+    notification.setUserId(saved.getUser().getUserId());
+    notification.setMessage("Se ha realizado una nueva entrega.");
+    notification.setType("ENTREGA");
+
+    notificationService.createNotification(notification);
 
     return response;
   }

@@ -1,6 +1,7 @@
 package com.udea.fe.service;
 
 import com.udea.fe.DTO.FeedbackDTO;
+import com.udea.fe.DTO.NotificationDTO;
 import com.udea.fe.entity.Feedback;
 import com.udea.fe.entity.Submission;
 import com.udea.fe.entity.User;
@@ -24,6 +25,7 @@ public class FeedbackService {
   private final SubmissionRepository submissionRepository;
   private final UserRepository userRepository;
   private final ModelMapper modelMapper;
+  private final NotificationService notificationService;
 
   public FeedbackDTO createFeedback(FeedbackDTO feedbackDTO) {
     Feedback feedback = modelMapper.map(feedbackDTO, Feedback.class);
@@ -58,6 +60,14 @@ public class FeedbackService {
     feedback.setCreatedAt(LocalDateTime.now());
 
     Feedback savedFeedback = feedbackRepository.save(feedback);
+
+    NotificationDTO notification = new NotificationDTO();
+    notification.setUserId(submission.getUser().getUserId());
+    notification.setMessage("Has recibido una nueva retroalimentación.");
+    notification.setType("FEEDBACK");
+
+    notificationService.createNotification(notification);
+
     return modelMapper.map(savedFeedback, FeedbackDTO.class);
   }
 
@@ -103,9 +113,14 @@ public class FeedbackService {
   }
 
   public List<FeedbackDTO> getFeedbacksBySubmissionId(Long submissionId) {
-    return feedbackRepository.findAll().stream()
-        .filter(feedback -> feedback.getSubmission() != null && feedback.getSubmission().getSubmissionId().equals(submissionId))
-        .map(feedback -> modelMapper.map(feedback, FeedbackDTO.class))
-        .collect(Collectors.toList());
-}
+    return feedbackRepository
+      .findAll()
+      .stream()
+      .filter(feedback ->
+        feedback.getSubmission() != null &&
+        feedback.getSubmission().getSubmissionId().equals(submissionId)
+      )
+      .map(feedback -> modelMapper.map(feedback, FeedbackDTO.class))
+      .collect(Collectors.toList());
+  }
 }

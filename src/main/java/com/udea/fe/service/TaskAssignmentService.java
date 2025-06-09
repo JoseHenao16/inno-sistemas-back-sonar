@@ -1,5 +1,6 @@
 package com.udea.fe.service;
 
+import com.udea.fe.DTO.NotificationDTO;
 import com.udea.fe.DTO.TaskAssignmentRequestDTO;
 import com.udea.fe.DTO.TaskAssignmentResponseDTO;
 import com.udea.fe.entity.Task;
@@ -26,6 +27,9 @@ public class TaskAssignmentService {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private NotificationService notificationService;
+
   public TaskAssignmentResponseDTO assignTask(
     TaskAssignmentRequestDTO request
   ) {
@@ -49,6 +53,13 @@ public class TaskAssignmentService {
     response.setAssignedType(assignmentId.getAssignedType());
     response.setAssignedId(assignmentId.getAssignedId());
     response.setMessage("Tarea asignada correctamente");
+
+    NotificationDTO notification = new NotificationDTO();
+    notification.setUserId(assignmentId.getAssignedId());
+    notification.setMessage("Se le ha asignado una nueva tarea");
+    notification.setType("ASIGNMENT");
+
+    notificationService.createNotification(notification);
 
     return response;
   }
