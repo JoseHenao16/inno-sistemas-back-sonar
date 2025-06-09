@@ -2,13 +2,16 @@ package com.udea.fe.service;
 
 import com.udea.fe.DTO.TaskDTO;
 import com.udea.fe.entity.Project;
+import com.udea.fe.entity.Role;
 import com.udea.fe.entity.Task;
 import com.udea.fe.entity.TaskStatus;
 import com.udea.fe.entity.User;
-import com.udea.fe.mapper.TaskMapper;
 import com.udea.fe.repository.ProjectRepository;
+import com.udea.fe.repository.TaskAssignmentRepository;
 import com.udea.fe.repository.TaskRepository;
 import com.udea.fe.repository.UserRepository;
+import com.udea.fe.repository.UserTeamRepository;
+
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,10 +26,12 @@ import org.springframework.stereotype.Service;
 public class TaskService {
 
   private final TaskRepository taskRepository;
+  private final TaskAssignmentRepository taskAssignmentRepository;
   private final ProjectRepository projectRepository;
   private final UserRepository userRepository;
+  private final UserTeamRepository userTeamRepository;
   private final ModelMapper modelMapper;
-  private final TaskMapper taskMapper;
+  
 
   public TaskDTO createTask(TaskDTO taskDTO) {
     if (taskDTO.getName() == null || taskDTO.getName().isBlank()) {
@@ -165,8 +170,28 @@ public class TaskService {
       .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
   }
 
-  public List<TaskDTO> getTasksByProjectId(Long projectId) {
-    List<Task> tasks = taskRepository.findByProject_ProjectId(projectId);
-    return tasks.stream().map(taskMapper::toDTO).collect(Collectors.toList());
-  }
+  public List<TaskDTO> getTasksByProjectIdAndUser(Long projectId, String userEmail) {
+    User user = userRepository.findByEmail(userEmail)
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    // Verifica si el usuario es profesor y está en el grupo del proyecto
+    boolean isTeacher = user.getRole() == Role.TEACHER;
+
+    System.out.println("\n isTeacher?" + isTeacher);
+    boolean isInProjectTeam = userTeamRepository.existsByUserIdAndProjectId(user.getUserId(), projectId);
+    System.out.println("\n isInProjectTeam?" + isInProjectTeam);
+
+    if (isTeacher && isInProjectTeam) {
+        return taskRepository.findByProject_ProjectId(projectId)
+            .stream().map(task -> modelMapper.map(task, TaskDTO.class)).collect(Collectors.toList());
+    } else {
+        // Solo tareas asignadas al usuario
+        List<Long> assignedTaskIds = taskAssignmentRepository.findById_AssignedIdAndId_AssignedType(user.getUserId(), "USER")
+            .stream().map(a -> a.getTask().getTaskId()).collect(Collectors.toList());
+
+        return taskRepository.findByProject_ProjectId(projectId)
+            .stream().filter(task -> assignedTaskIds.contains(task.getTaskId()))
+            .map(task -> modelMapper.map(task, TaskDTO.class)).collect(Collectors.toList());
+    }
+}
 }

@@ -3,6 +3,7 @@ package com.udea.fe.controller;
 import com.udea.fe.DTO.TaskDTO;
 import com.udea.fe.entity.TaskStatus;
 import com.udea.fe.service.TaskService;
+import java.security.Principal;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -63,12 +64,17 @@ public class TaskController {
 
   @GetMapping("/project/{projectId}")
   public ResponseEntity<List<TaskDTO>> getTasksByProject(
-    @PathVariable Long projectId
+    @PathVariable Long projectId,
+    Principal principal
   ) {
     System.out.println(
       "\n ---> Obteniendo tareas del proyecto con ID: " + projectId
     );
-    List<TaskDTO> tasks = taskService.getTasksByProjectId(projectId);
+    String userEmail = principal.getName();
+    List<TaskDTO> tasks = taskService.getTasksByProjectIdAndUser(
+      projectId,
+      userEmail
+    );
     return ResponseEntity.ok(tasks);
   }
 }

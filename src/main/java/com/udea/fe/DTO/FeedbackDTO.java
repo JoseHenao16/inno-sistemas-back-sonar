@@ -10,10 +10,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeedbackDTO {
-    private Long id;
-    private String comment;
-    private Integer rating;
-    private Long taskId;
-    private Long createdById;
-    private Long parentFeedbackId;
+
+  private Long feedbackId;
+  private String comment;
+  private Integer rating;
+  private Long createdById;
+  private Long submissionId;
+  private Long parentFeedbackId;
 }

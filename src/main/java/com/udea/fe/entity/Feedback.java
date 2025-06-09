@@ -25,8 +25,8 @@ public class Feedback {
     private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "task_id")
-    private Task task;
+    @JoinColumn(name = "submission_id")
+    private Submission submission;
 
     @ManyToOne
     @JoinColumn(name = "created_by")
@@ -35,5 +35,4 @@ public class Feedback {
     @ManyToOne
     @JoinColumn(name = "parent_feedback_id")
     private Feedback parentFeedback;
-
 }
