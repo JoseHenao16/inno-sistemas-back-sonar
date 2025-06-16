@@ -1,6 +1,6 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.UserDTO;
+import com.udea.fe.DTO.UserDTO;
 import com.udea.fe.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;

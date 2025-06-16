@@ -1,8 +1,8 @@
 package com.udea.fe.security.service;
 
+import com.udea.fe.DTO.AuthResponse;
+import com.udea.fe.DTO.LoginRequest;
 import com.udea.fe.config.JwtService;
-import com.udea.fe.dto.AuthResponse;
-import com.udea.fe.dto.LoginRequest;
 import com.udea.fe.entity.User;
 import com.udea.fe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

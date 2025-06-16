@@ -1,6 +1,6 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.NotificationDTO;
+import com.udea.fe.DTO.NotificationDTO;
 import com.udea.fe.service.NotificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

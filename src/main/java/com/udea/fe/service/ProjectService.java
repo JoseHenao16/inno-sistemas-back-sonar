@@ -1,6 +1,6 @@
 package com.udea.fe.service;
 
-import com.udea.fe.dto.ProjectDTO;
+import com.udea.fe.DTO.ProjectDTO;
 import com.udea.fe.entity.Project;
 import com.udea.fe.entity.ProjectStatus;
 import com.udea.fe.entity.User;

@@ -1,6 +1,6 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.ProjectDTO;
+import com.udea.fe.DTO.ProjectDTO;
 import com.udea.fe.entity.ProjectStatus;
 import com.udea.fe.service.ProjectService;
 import jakarta.validation.Valid;

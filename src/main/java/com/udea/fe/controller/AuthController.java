@@ -1,8 +1,8 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.AuthResponse;
-import com.udea.fe.dto.LoginRequest;
-import com.udea.fe.dto.UserDTO;
+import com.udea.fe.DTO.AuthResponse;
+import com.udea.fe.DTO.LoginRequest;
+import com.udea.fe.DTO.UserDTO;
 import com.udea.fe.entity.User;
 import com.udea.fe.repository.UserRepository;
 import com.udea.fe.security.service.AuthService;

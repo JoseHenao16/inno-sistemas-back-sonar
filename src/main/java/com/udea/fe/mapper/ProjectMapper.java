@@ -1,6 +1,6 @@
 package com.udea.fe.mapper;
 
-import com.udea.fe.dto.ProjectDTO;
+import com.udea.fe.DTO.ProjectDTO;
 import com.udea.fe.entity.Project;
 
 import org.mapstruct.Mapper;

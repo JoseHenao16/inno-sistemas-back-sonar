@@ -1,6 +1,6 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.FeedbackDTO;
+import com.udea.fe.DTO.FeedbackDTO;
 import com.udea.fe.service.FeedbackService;
 import java.util.List;
 import lombok.AllArgsConstructor;

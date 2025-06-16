@@ -1,7 +1,7 @@
 package com.udea.fe.service;
 
-import com.udea.fe.dto.FeedbackDTO;
-import com.udea.fe.dto.NotificationDTO;
+import com.udea.fe.DTO.FeedbackDTO;
+import com.udea.fe.DTO.NotificationDTO;
 import com.udea.fe.entity.Feedback;
 import com.udea.fe.entity.Submission;
 import com.udea.fe.entity.User;

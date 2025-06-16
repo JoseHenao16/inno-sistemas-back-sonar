@@ -1,4 +1,4 @@
-package com.udea.fe.dto;
+package com.udea.fe.DTO;
 
 import lombok.Data;
 

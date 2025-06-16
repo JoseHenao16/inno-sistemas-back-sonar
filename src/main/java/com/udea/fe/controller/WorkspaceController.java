@@ -1,6 +1,6 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.WorkspaceDTO;
+import com.udea.fe.DTO.WorkspaceDTO;
 import com.udea.fe.service.WorkspaceService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

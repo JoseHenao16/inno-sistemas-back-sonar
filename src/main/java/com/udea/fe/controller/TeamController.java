@@ -1,6 +1,6 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.TeamDTO;
+import com.udea.fe.DTO.TeamDTO;
 import com.udea.fe.entity.UserTeam;
 import com.udea.fe.service.TeamService;
 import lombok.AllArgsConstructor;

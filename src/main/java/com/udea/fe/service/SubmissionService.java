@@ -1,8 +1,8 @@
 package com.udea.fe.service;
 
-import com.udea.fe.dto.NotificationDTO;
-import com.udea.fe.dto.SubmissionRequestDTO;
-import com.udea.fe.dto.SubmissionResponseDTO;
+import com.udea.fe.DTO.NotificationDTO;
+import com.udea.fe.DTO.SubmissionRequestDTO;
+import com.udea.fe.DTO.SubmissionResponseDTO;
 import com.udea.fe.entity.Role;
 import com.udea.fe.entity.Submission;
 import com.udea.fe.entity.User;

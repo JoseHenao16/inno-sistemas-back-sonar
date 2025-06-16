@@ -1,4 +1,4 @@
-package com.udea.fe.dto;
+package com.udea.fe.DTO;
 
 import com.udea.fe.entity.TaskPriority;
 import com.udea.fe.entity.TaskStatus;

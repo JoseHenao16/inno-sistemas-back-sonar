@@ -1,6 +1,6 @@
 package com.udea.fe.service;
 
-import com.udea.fe.dto.UserDTO;
+import com.udea.fe.DTO.UserDTO;
 import com.udea.fe.entity.Role;
 import com.udea.fe.entity.Status;
 import com.udea.fe.entity.User;

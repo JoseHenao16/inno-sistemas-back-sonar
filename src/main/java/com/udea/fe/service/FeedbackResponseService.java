@@ -1,6 +1,6 @@
 package com.udea.fe.service;
 
-import com.udea.fe.dto.FeedbackResponseDTO;
+import com.udea.fe.DTO.FeedbackResponseDTO;
 import com.udea.fe.entity.Feedback;
 import com.udea.fe.entity.FeedbackResponse;
 import com.udea.fe.entity.User;

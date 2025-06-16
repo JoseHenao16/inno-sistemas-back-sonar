@@ -1,6 +1,6 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.dto.FeedbackResponseDTO;
+import com.udea.fe.DTO.FeedbackResponseDTO;
 import com.udea.fe.service.FeedbackResponseService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

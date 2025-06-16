@@ -1,6 +1,6 @@
 package com.udea.fe.service;
 
-import com.udea.fe.dto.TaskDTO;
+import com.udea.fe.DTO.TaskDTO;
 import com.udea.fe.entity.Project;
 import com.udea.fe.entity.Role;
 import com.udea.fe.entity.Task;

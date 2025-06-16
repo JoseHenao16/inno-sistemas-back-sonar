@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.udea.fe.dto.TaskAssignmentRequestDTO;
-import com.udea.fe.dto.TaskAssignmentResponseDTO;
+import com.udea.fe.DTO.TaskAssignmentRequestDTO;
+import com.udea.fe.DTO.TaskAssignmentResponseDTO;
 import com.udea.fe.entity.User;
 import com.udea.fe.service.TaskAssignmentService;
 
