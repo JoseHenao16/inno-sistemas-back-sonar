@@ -1,4 +1,4 @@
-package com.udea.fe.DTO;
+package com.udea.fe.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

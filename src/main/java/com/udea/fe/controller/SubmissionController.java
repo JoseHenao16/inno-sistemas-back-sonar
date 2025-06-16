@@ -1,7 +1,7 @@
 package com.udea.fe.controller;
 
-import com.udea.fe.DTO.SubmissionRequestDTO;
-import com.udea.fe.DTO.SubmissionResponseDTO;
+import com.udea.fe.dto.SubmissionRequestDTO;
+import com.udea.fe.dto.SubmissionResponseDTO;
 import com.udea.fe.service.SubmissionService;
 import java.security.Principal;
 import java.util.List;

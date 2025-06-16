@@ -1,8 +1,8 @@
 package com.udea.fe.service;
 
-import com.udea.fe.DTO.NotificationDTO;
-import com.udea.fe.DTO.TaskAssignmentRequestDTO;
-import com.udea.fe.DTO.TaskAssignmentResponseDTO;
+import com.udea.fe.dto.NotificationDTO;
+import com.udea.fe.dto.TaskAssignmentRequestDTO;
+import com.udea.fe.dto.TaskAssignmentResponseDTO;
 import com.udea.fe.entity.Task;
 import com.udea.fe.entity.TaskAssignment;
 import com.udea.fe.entity.TaskAssignmentId;

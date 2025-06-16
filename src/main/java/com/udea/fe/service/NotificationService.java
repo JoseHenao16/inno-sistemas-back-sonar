@@ -1,6 +1,6 @@
 package com.udea.fe.service;
 
-import com.udea.fe.DTO.NotificationDTO;
+import com.udea.fe.dto.NotificationDTO;
 import com.udea.fe.entity.Notification;
 import com.udea.fe.entity.User;
 import com.udea.fe.repository.NotificationRepository;

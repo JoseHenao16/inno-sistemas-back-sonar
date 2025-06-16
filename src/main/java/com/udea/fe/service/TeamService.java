@@ -1,6 +1,6 @@
 package com.udea.fe.service;
 
-import com.udea.fe.DTO.TeamDTO;
+import com.udea.fe.dto.TeamDTO;
 import com.udea.fe.entity.*;
 import com.udea.fe.repository.ProjectRepository;
 import com.udea.fe.repository.TeamRepository;

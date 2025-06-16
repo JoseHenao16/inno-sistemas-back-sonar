@@ -1,7 +1,8 @@
 package com.udea.fe.mapper;
 
+import com.udea.fe.dto.TaskDTO;
 import com.udea.fe.entity.Task;
-import com.udea.fe.DTO.TaskDTO;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

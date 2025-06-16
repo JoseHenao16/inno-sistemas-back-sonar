@@ -1,4 +1,4 @@
-package com.udea.fe.DTO;
+package com.udea.fe.dto;
 
 import com.udea.fe.entity.ProjectStatus;
 import lombok.AllArgsConstructor;

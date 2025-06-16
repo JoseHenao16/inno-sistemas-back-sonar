@@ -1,6 +1,6 @@
 package com.udea.fe.service;
 
-import com.udea.fe.DTO.WorkspaceDTO;
+import com.udea.fe.dto.WorkspaceDTO;
 import com.udea.fe.entity.Project;
 import com.udea.fe.entity.Workspace;
 import com.udea.fe.repository.ProjectRepository;
