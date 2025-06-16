@@ -40,7 +40,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./mvnw verify sonar:sonar \
-            -Dsonar.projectKey=TuUsuario_inno-sistemas-back-sonar \
+            -Dsonar.projectKey=JoseHenao16_inno-sistemas-back-sonar \
             -Dsonar.organization=innosistemas \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN
