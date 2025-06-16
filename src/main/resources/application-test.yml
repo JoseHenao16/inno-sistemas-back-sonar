@@ -8,6 +8,10 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.H2Dialect
-  security:
-    jwt:
-      secret: MiClaveUltraSecretaQueDebeSerDeAlMenos256BitsDeLargo123456
+  h2:
+    console:
+      enabled: true
+
+security:
+  jwt:
+    secret: MiClaveUltraSecretaQueDebeSerDeAlMenos256BitsDeLargo123456
