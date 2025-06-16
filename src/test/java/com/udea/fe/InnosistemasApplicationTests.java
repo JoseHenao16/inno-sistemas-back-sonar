@@ -11,7 +11,7 @@ class InnosistemasApplicationTests {
 
 	@Test
 	void contextLoads() {
-		System.out.println(">>>>> Perfil de prueba activo correctamente");
+		System.out.println(">>>>> Perfil de prueba activo correctamente. <<<<<");
 	}
 
 }
