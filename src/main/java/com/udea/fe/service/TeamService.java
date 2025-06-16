@@ -25,16 +25,26 @@ public class TeamService {
     private final UserTeamRepository userTeamRepository;
     private final ModelMapper modelMapper;
 
+    // 🔸 Constantes para evitar literales duplicados
+    private static final String MSG_PROYECTO_NO_ENCONTRADO = "Proyecto no encontrado";
+    private static final String MSG_USUARIO_NO_ENCONTRADO = "Usuario no encontrado";
+    private static final String MSG_EQUIPO_NO_ENCONTRADO = "Equipo no encontrado";
+    private static final String MSG_EQUIPO_NO_ENCONTRADO_CON_ID = "Equipo no encontrado con ID: ";
+    private static final String MSG_USUARIO_NO_ENCONTRADO_CON_ID = "Usuario no encontrado con id: ";
+    private static final String MSG_USUARIO_LIDER_NO_ENCONTRADO = "Usuario líder no encontrado";
+    private static final String MSG_USUARIO_YA_EN_EQUIPO = "El usuario ya está en el equipo";
+    private static final String MSG_USUARIO_NO_ESTA_EN_EQUIPO = "Usuario no está en el equipo";
+
     public TeamDTO createTeam(TeamDTO teamDTO) {
         Team team = modelMapper.map(teamDTO, Team.class);
 
         Project project = projectRepository.findById(teamDTO.getProjectId())
-                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+                .orElseThrow(() -> new RuntimeException(MSG_PROYECTO_NO_ENCONTRADO));
         team.setProject(project);
 
         if (teamDTO.getLeaderId() != null) {
             User leader = userRepository.findById(teamDTO.getLeaderId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                    .orElseThrow(() -> new RuntimeException(MSG_USUARIO_LIDER_NO_ENCONTRADO));
             team.setLeader(leader);
         }
 
@@ -45,12 +55,12 @@ public class TeamService {
     public TeamDTO getTeamById(Long id) {
         return teamRepository.findById(id)
                 .map(team -> modelMapper.map(team, TeamDTO.class))
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
+                .orElseThrow(() -> new RuntimeException(MSG_EQUIPO_NO_ENCONTRADO));
     }
 
     public List<TeamDTO> getTeamsByProject(Long projectId) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+                .orElseThrow(() -> new RuntimeException(MSG_PROYECTO_NO_ENCONTRADO));
 
         return teamRepository.findByProject(project).stream()
                 .map(team -> modelMapper.map(team, TeamDTO.class))
@@ -59,20 +69,20 @@ public class TeamService {
 
     public TeamDTO updateTeam(Long id, TeamDTO teamDTO) {
         Team existingTeam = teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado con ID: " + id));
+                .orElseThrow(() -> new RuntimeException(MSG_EQUIPO_NO_ENCONTRADO_CON_ID + id));
 
         existingTeam.setName(teamDTO.getName());
         existingTeam.setDescription(teamDTO.getDescription());
 
         if (teamDTO.getLeaderId() != null) {
             User leader = userRepository.findById(teamDTO.getLeaderId())
-                    .orElseThrow(() -> new RuntimeException("Usuario líder no encontrado"));
+                    .orElseThrow(() -> new RuntimeException(MSG_USUARIO_LIDER_NO_ENCONTRADO));
             existingTeam.setLeader(leader);
         }
 
         if (teamDTO.getProjectId() != null) {
             Project project = projectRepository.findById(teamDTO.getProjectId())
-                    .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+                    .orElseThrow(() -> new RuntimeException(MSG_PROYECTO_NO_ENCONTRADO));
             existingTeam.setProject(project);
         }
 
@@ -82,24 +92,23 @@ public class TeamService {
 
     public void deleteTeam(Long id) {
         if (!teamRepository.existsById(id)) {
-            throw new RuntimeException("Equipo no encontrado con ID: " + id);
+            throw new RuntimeException(MSG_EQUIPO_NO_ENCONTRADO_CON_ID + id);
         }
         teamRepository.deleteById(id);
     }
 
     public void addUserToTeam(Long userId, Long teamId, String roleInGroup) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + userId));
+                .orElseThrow(() -> new RuntimeException(MSG_USUARIO_NO_ENCONTRADO_CON_ID + userId));
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado con id: " + teamId));
+                .orElseThrow(() -> new RuntimeException(MSG_EQUIPO_NO_ENCONTRADO_CON_ID + teamId));
 
         UserTeamId id = new UserTeamId();
         id.setUserId(userId);
         id.setTeamId(teamId);
 
-        // Verificamos si ya está en el equipo
         if (userTeamRepository.existsById(id)) {
-            throw new RuntimeException("El usuario ya está en el equipo");
+            throw new RuntimeException(MSG_USUARIO_YA_EN_EQUIPO);
         }
 
         UserTeam userTeam = new UserTeam();
@@ -113,7 +122,7 @@ public class TeamService {
 
     public List<UserTeam> getUsersByTeam(Long teamId) {
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
+                .orElseThrow(() -> new RuntimeException(MSG_EQUIPO_NO_ENCONTRADO));
         return userTeamRepository.findByTeam(team);
     }
 
@@ -123,10 +132,9 @@ public class TeamService {
         id.setTeamId(teamId);
 
         if (!userTeamRepository.existsById(id)) {
-            throw new RuntimeException("Usuario no está en el equipo");
+            throw new RuntimeException(MSG_USUARIO_NO_ESTA_EN_EQUIPO);
         }
 
         userTeamRepository.deleteById(id);
     }
-
 }
