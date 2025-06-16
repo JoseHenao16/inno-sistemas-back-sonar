@@ -29,6 +29,9 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
+      - name: Dar permisos de ejecución a mvnw
+        run: chmod +x mvnw
+
       - name: Build and analyze on SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
