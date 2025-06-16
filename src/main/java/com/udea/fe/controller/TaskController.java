@@ -3,9 +3,14 @@ package com.udea.fe.controller;
 import com.udea.fe.DTO.TaskDTO;
 import com.udea.fe.entity.TaskStatus;
 import com.udea.fe.service.TaskService;
+
 import java.security.Principal;
 import java.util.List;
+
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,25 +20,27 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class TaskController {
 
+  private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
+
   private final TaskService taskService;
 
   @PostMapping("/create_task")
   public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
-    System.out.println("\n ---> Creando nueva tarea: " + taskDTO);
+    logger.info("Creando nueva tarea: {}", taskDTO);
     TaskDTO createdTask = taskService.createTask(taskDTO);
     return new ResponseEntity<>(createdTask, HttpStatus.CREATED);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id) {
-    System.out.println("\n ---> Obteniendo tarea con ID: " + id);
+    logger.info("Obteniendo tarea con ID: {}", id);
     TaskDTO taskDTO = taskService.getTaskById(id);
     return ResponseEntity.ok(taskDTO);
   }
 
   @GetMapping("/all")
   public ResponseEntity<List<TaskDTO>> getAllTasks() {
-    System.out.println("\n ---> Obteniendo todas las tareas");
+    logger.info("Obteniendo todas las tareas");
     List<TaskDTO> tasks = taskService.getAllTasks();
     return ResponseEntity.ok(tasks);
   }
@@ -43,9 +50,7 @@ public class TaskController {
     @PathVariable Long id,
     @RequestBody TaskDTO taskDTO
   ) {
-    System.out.println(
-      "\n ---> Actualizando tarea con ID: " + id + " con datos: " + taskDTO
-    );
+    logger.info("Actualizando tarea con ID: {} con datos: {}", id, taskDTO);
     TaskDTO updatedTask = taskService.updateTask(id, taskDTO);
     return ResponseEntity.ok(updatedTask);
   }
@@ -55,9 +60,7 @@ public class TaskController {
     @PathVariable Long id,
     @RequestParam TaskStatus status
   ) {
-    System.out.println(
-      "\n ---> Actualizando estado de la tarea con ID: " + id + " a: " + status
-    );
+    logger.info("Actualizando estado de la tarea con ID: {} a: {}", id, status);
     TaskDTO updatedTask = taskService.updateTaskStatus(id, status);
     return ResponseEntity.ok(updatedTask);
   }
@@ -67,14 +70,9 @@ public class TaskController {
     @PathVariable Long projectId,
     Principal principal
   ) {
-    System.out.println(
-      "\n ---> Obteniendo tareas del proyecto con ID: " + projectId
-    );
+    logger.info("Obteniendo tareas del proyecto con ID: {}", projectId);
     String userEmail = principal.getName();
-    List<TaskDTO> tasks = taskService.getTasksByProjectIdAndUser(
-      projectId,
-      userEmail
-    );
+    List<TaskDTO> tasks = taskService.getTasksByProjectIdAndUser(projectId, userEmail);
     return ResponseEntity.ok(tasks);
   }
 }
