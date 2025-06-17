@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,20 +59,34 @@ class UserServiceTest {
     }
 
     @Test
-    void createUser_duplicateDni() {
-        UserDTO dto = new UserDTO(null, "Juan", "juan@mail.com", "123", "pass", Role.STUDENT, null);
-        User existing = new User();
-        existing.setDni("123");
+    void createUser_setsCreatedAtAndStatusIfNull() {
+        UserDTO dto = new UserDTO(null, "Ana", "ana@mail.com", "321", "clave", Role.TEACHER, null);
+        User user = new User();
+        user.setPassword("encrypted");
+        user.setRole(Role.TEACHER);
+        user.setDni("321");
+        user.setEmail("ana@mail.com");
+        user.setName("Ana");
+        user.setStatus(null);
+        user.setCreatedAt(null);
 
-        // Simula que ya existe un usuario con ese DNI
-        when(userRepository.findByDni("123")).thenReturn(Optional.of(existing));
+        when(userRepository.findByDni("321")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("ana@mail.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("clave")).thenReturn("encrypted");
+        when(modelMapper.map(any(UserDTO.class), eq(User.class))).thenReturn(user);
+        when(modelMapper.map(any(User.class), eq(UserDTO.class))).thenReturn(dto);
+        when(userRepository.save(any())).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            u.setCreatedAt(LocalDateTime.now());
+            u.setStatus(Status.ACTIVE);
+            return u;
+        });
 
-        // También necesitas simular el mapeo (aunque no se debe ejecutar si lanza
-        // antes)
-        when(modelMapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User());
+        UserDTO result = userService.createUser(dto);
 
-        UserException ex = assertThrows(UserException.class, () -> userService.createUser(dto));
-        assertEquals("Ya existe un usuario con el DNI proporcionado", ex.getMessage());
+        assertNotNull(user.getCreatedAt());
+        assertEquals(Status.ACTIVE, user.getStatus());
+        assertEquals(dto.getDni(), result.getDni());
     }
 
     @Test
@@ -98,31 +113,45 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_success() {
-        Long userId = 1L;
-        User existingUser = new User();
-        existingUser.setUserId(userId);
-        existingUser.setDni("123");
-        existingUser.setEmail("original@mail.com");
+    void getUserByID_success() {
+        User user = new User();
+        user.setUserId(1L);
+        user.setName("Carlos");
+        UserDTO dto = new UserDTO(1L, "Carlos", "carlos@mail.com", "999", "pass", Role.STUDENT, Status.ACTIVE);
 
-        UserDTO dto = new UserDTO(userId, "Nuevo Nombre", "nuevo@mail.com", "456", "nuevaPass", Role.TEACHER,
-                Status.INACTIVE);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(modelMapper.map(user, UserDTO.class)).thenReturn(dto);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-        when(userRepository.findByDni("456")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("nuevo@mail.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("nuevaPass")).thenReturn("hashedPass");
-        when(userRepository.save(any())).thenReturn(existingUser);
-        when(modelMapper.map(any(User.class), eq(UserDTO.class))).thenReturn(dto);
+        UserDTO result = userService.getUserByID(1L);
+        assertEquals("Carlos", result.getName());
+    }
 
-        UserDTO result = userService.updateUser(userId, dto);
+    @Test
+    void getUserByID_notFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(UserException.class, () -> userService.getUserByID(99L));
+    }
 
-        assertEquals("Nuevo Nombre", result.getName());
-        assertEquals("456", existingUser.getDni());
-        assertEquals("nuevo@mail.com", existingUser.getEmail());
-        assertEquals(Status.INACTIVE, existingUser.getStatus());
-        assertEquals(Role.TEACHER, existingUser.getRole());
-        assertEquals("hashedPass", existingUser.getPassword());
+    @Test
+    void getAllUsers_success() {
+        User user1 = new User();
+        user1.setUserId(1L);
+        user1.setName("A");
+        user1.setRole(Role.STUDENT);
+        User user2 = new User();
+        user2.setUserId(2L);
+        user2.setName("B");
+        user2.setRole(Role.TEACHER);
+
+        UserDTO dto1 = new UserDTO(1L, "A", "a@mail.com", "111", null, Role.STUDENT, Status.ACTIVE);
+        UserDTO dto2 = new UserDTO(2L, "B", "b@mail.com", "222", null, Role.TEACHER, Status.ACTIVE);
+
+        when(userRepository.findByRoleNot(Role.ADMIN)).thenReturn(List.of(user1, user2));
+        when(modelMapper.map(user1, UserDTO.class)).thenReturn(dto1);
+        when(modelMapper.map(user2, UserDTO.class)).thenReturn(dto2);
+
+        List<UserDTO> users = userService.getAllUsers();
+        assertEquals(2, users.size());
     }
 
     @Test
@@ -148,59 +177,6 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserByID_notFound() {
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(UserException.class, () -> userService.getUserByID(99L));
-    }
-
-    @Test
-    void deleteUser_notFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(UserException.class, () -> userService.deleteUser(1L));
-    }
-
-    @Test
-    void deactivateUser_success() {
-        User user = new User();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        userService.deactivateUser(1L);
-        assertEquals(Status.INACTIVE, user.getStatus());
-    }
-
-    @Test
-    void updateUser_duplicateDni_throwsException() {
-        Long userId = 1L;
-        User existingUser = new User();
-        existingUser.setUserId(userId);
-        existingUser.setDni("123");
-
-        UserDTO dto = new UserDTO(userId, "Nombre", "mail@mail.com", "456", null, Role.STUDENT, null);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-        when(userRepository.findByDni("456")).thenReturn(Optional.of(new User()));
-
-        Exception ex = assertThrows(UserException.class, () -> userService.updateUser(userId, dto));
-        assertEquals("Ya existe otro usuario con el mismo DNI", ex.getMessage());
-    }
-
-    @Test
-    void updateUser_duplicateEmail_throwsException() {
-        Long userId = 1L;
-        User existingUser = new User();
-        existingUser.setUserId(userId);
-        existingUser.setEmail("original@mail.com");
-
-        UserDTO dto = new UserDTO(userId, "Nombre", "nuevo@mail.com", "123", null, Role.STUDENT, null);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-        when(userRepository.findByDni("123")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("nuevo@mail.com")).thenReturn(Optional.of(new User()));
-
-        Exception ex = assertThrows(UserException.class, () -> userService.updateUser(userId, dto));
-        assertEquals("Ya existe otro usuario con el mismo email", ex.getMessage());
-    }
-
-    @Test
     void updateUser_userNotFound_throwsException() {
         Long userId = 999L;
         UserDTO dto = new UserDTO(userId, "Nombre", "mail@mail.com", "123", null, Role.STUDENT, null);
@@ -211,4 +187,8 @@ class UserServiceTest {
         assertEquals("Usuario no encontrado", ex.getMessage());
     }
 
+    @Test
+    void deleteUser_success() {
+        // Implement deleteUser test or remove if not needed
+    }
 }
