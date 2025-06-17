@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class TeamServiceTest {
@@ -118,4 +119,79 @@ class TeamServiceTest {
 
         assertThrows(NotInTeamException.class, () -> teamService.removeUserFromTeam(userId, teamId));
     }
+
+    @Test
+    void getTeamById_success() {
+        Team team = new Team();
+        team.setTeamId(1L);
+        TeamDTO dto = new TeamDTO();
+        dto.setId(1L);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(team));
+        when(modelMapper.map(team, TeamDTO.class)).thenReturn(dto);
+
+        TeamDTO result = teamService.getTeamById(1L);
+        assertEquals(1L, result.getId());
+    }
+
+    @Test
+    void getTeamsByProject_success() {
+        Project project = new Project();
+        Team team1 = new Team();
+        Team team2 = new Team();
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(teamRepository.findByProject(project)).thenReturn(List.of(team1, team2));
+        when(modelMapper.map(any(Team.class), eq(TeamDTO.class)))
+                .thenReturn(new TeamDTO(), new TeamDTO());
+
+        List<TeamDTO> result = teamService.getTeamsByProject(1L);
+
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    void updateTeam_withLeaderAndProject_success() {
+        Team existing = new Team();
+        existing.setTeamId(1L);
+        existing.setName("old");
+
+        TeamDTO dto = new TeamDTO();
+        dto.setName("new");
+        dto.setDescription("desc");
+        dto.setLeaderId(2L);
+        dto.setProjectId(3L);
+
+        User leader = new User();
+        Project project = new Project();
+
+        Team updated = new Team();
+        updated.setTeamId(1L);
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(leader));
+        when(projectRepository.findById(3L)).thenReturn(Optional.of(project));
+        when(teamRepository.save(existing)).thenReturn(updated);
+        when(modelMapper.map(updated, TeamDTO.class)).thenReturn(dto);
+
+        TeamDTO result = teamService.updateTeam(1L, dto);
+        assertEquals("new", result.getName());
+    }
+
+    @Test
+    void deleteTeam_success() {
+        when(teamRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(teamRepository).deleteById(1L);
+
+        teamService.deleteTeam(1L);
+
+        verify(teamRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteTeam_notFound_throws() {
+        when(teamRepository.existsById(1L)).thenReturn(false);
+        Exception ex = assertThrows(TeamNotFoundException.class, () -> teamService.deleteTeam(1L));
+        assertEquals("Equipo no encontrado con ID: 1", ex.getMessage());
+    }
+
 }
