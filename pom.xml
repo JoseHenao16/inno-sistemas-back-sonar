@@ -216,6 +216,11 @@
 						</goals>
 						<configuration>
         					<outputDirectory>${project.build.directory}/jacoco-report</outputDirectory>
+							<reports>
+    							<xml enabled="true"/>
+    							<csv enabled="false"/>
+    							<html enabled="false"/>
+  							</reports>
       					</configuration>
 					</execution>
 				</executions>
