@@ -59,11 +59,18 @@ class UserServiceTest {
 
     @Test
     void createUser_duplicateDni() {
-        UserDTO dto = new UserDTO(null, "Juan", "juan@mail.com", "123", "pass", Role.STUDENT, Status.ACTIVE);
+        UserDTO dto = new UserDTO(null, "Juan", "juan@mail.com", "123", "pass", Role.STUDENT, null);
+        User existing = new User();
+        existing.setDni("123");
 
-        when(userRepository.findByDni("123")).thenReturn(Optional.of(new User()));
+        // Simula que ya existe un usuario con ese DNI
+        when(userRepository.findByDni("123")).thenReturn(Optional.of(existing));
 
-        Exception ex = assertThrows(UserException.class, () -> userService.createUser(dto));
+        // También necesitas simular el mapeo (aunque no se debe ejecutar si lanza
+        // antes)
+        when(modelMapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User());
+
+        UserException ex = assertThrows(UserException.class, () -> userService.createUser(dto));
         assertEquals("Ya existe un usuario con el DNI proporcionado", ex.getMessage());
     }
 
