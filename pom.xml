@@ -203,16 +203,20 @@
 				<version>0.8.10</version>
 				<executions>
 					<execution>
+						<id>prepare-agent</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
 					<execution>
 						<id>report</id>
-						<phase>prepare-package</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+        					<outputDirectory>${project.build.directory}/jacoco-report</outputDirectory>
+      					</configuration>
 					</execution>
 				</executions>
 			</plugin>

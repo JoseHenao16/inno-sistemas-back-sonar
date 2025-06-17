@@ -32,15 +32,14 @@ jobs:
       - name: Give permission to Maven Wrapper
         run: chmod +x mvnw
 
-      - name: Dar permisos de ejecución a mvnw
-        run: chmod +x mvnw
-
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./mvnw verify sonar:sonar \
+          ./mvnw clean verify sonar:sonar \
             -Dsonar.projectKey=JoseHenao16_inno-sistemas-back-sonar \
             -Dsonar.organization=josehenao16 \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-report/jacoco.xml \
+            -Dsonar.java.binaries=target/classes
