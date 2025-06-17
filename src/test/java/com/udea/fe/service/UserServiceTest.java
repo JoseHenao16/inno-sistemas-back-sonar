@@ -59,45 +59,63 @@ class UserServiceTest {
 
     @Test
     void createUser_duplicateDni() {
+        UserDTO dto = new UserDTO(null, "Juan", "juan@mail.com", "123", "pass", Role.STUDENT, Status.ACTIVE);
+
         when(userRepository.findByDni("123")).thenReturn(Optional.of(new User()));
-        UserDTO dto = new UserDTO(null, "A", "a@mail.com", "123", "pass", Role.STUDENT, null);
-        assertThrows(UserException.class, () -> userService.createUser(dto));
+
+        Exception ex = assertThrows(UserException.class, () -> userService.createUser(dto));
+        assertEquals("Ya existe un usuario con el DNI proporcionado", ex.getMessage());
     }
 
     @Test
     void createUser_duplicateEmail() {
+        UserDTO dto = new UserDTO(null, "Juan", "juan@mail.com", "123", "pass", Role.STUDENT, Status.ACTIVE);
+
         when(userRepository.findByDni("123")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("a@mail.com")).thenReturn(Optional.of(new User()));
-        UserDTO dto = new UserDTO(null, "A", "a@mail.com", "123", "pass", Role.STUDENT, null);
-        assertThrows(UserException.class, () -> userService.createUser(dto));
+        when(userRepository.findByEmail("juan@mail.com")).thenReturn(Optional.of(new User()));
+
+        Exception ex = assertThrows(UserException.class, () -> userService.createUser(dto));
+        assertEquals("Ya existe un usuario con el email proporcionado", ex.getMessage());
     }
 
     @Test
     void createUser_duplicateId() {
-        UserDTO dto = new UserDTO(99L, "A", "a@mail.com", "123", "pass", Role.STUDENT, null);
+        UserDTO dto = new UserDTO(10L, "Juan", "juan@mail.com", "123", "pass", Role.STUDENT, Status.ACTIVE);
+
         when(userRepository.findByDni("123")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("a@mail.com")).thenReturn(Optional.empty());
-        when(userRepository.existsById(99L)).thenReturn(true);
-        assertThrows(UserException.class, () -> userService.createUser(dto));
+        when(userRepository.findByEmail("juan@mail.com")).thenReturn(Optional.empty());
+        when(userRepository.existsById(10L)).thenReturn(true);
+
+        Exception ex = assertThrows(UserException.class, () -> userService.createUser(dto));
+        assertEquals("Ya existe un usuario con el ID proporcionado", ex.getMessage());
     }
 
     @Test
     void updateUser_success() {
-        UserDTO dto = new UserDTO(null, "New", "new@mail.com", "999", "newpass", Role.TEACHER, Status.INACTIVE);
-        User user = new User();
-        user.setDni("old");
-        user.setEmail("old@mail.com");
+        Long userId = 1L;
+        User existingUser = new User();
+        existingUser.setUserId(userId);
+        existingUser.setDni("123");
+        existingUser.setEmail("original@mail.com");
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.findByDni("999")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("new@mail.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("newpass")).thenReturn("encoded");
-        when(userRepository.save(any())).thenReturn(user);
+        UserDTO dto = new UserDTO(userId, "Nuevo Nombre", "nuevo@mail.com", "456", "nuevaPass", Role.TEACHER,
+                Status.INACTIVE);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByDni("456")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("nuevo@mail.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("nuevaPass")).thenReturn("hashedPass");
+        when(userRepository.save(any())).thenReturn(existingUser);
         when(modelMapper.map(any(User.class), eq(UserDTO.class))).thenReturn(dto);
 
-        UserDTO result = userService.updateUser(1L, dto);
+        UserDTO result = userService.updateUser(userId, dto);
 
-        assertEquals("New", result.getName());
+        assertEquals("Nuevo Nombre", result.getName());
+        assertEquals("456", existingUser.getDni());
+        assertEquals("nuevo@mail.com", existingUser.getEmail());
+        assertEquals(Status.INACTIVE, existingUser.getStatus());
+        assertEquals(Role.TEACHER, existingUser.getRole());
+        assertEquals("hashedPass", existingUser.getPassword());
     }
 
     @Test
@@ -141,4 +159,49 @@ class UserServiceTest {
         userService.deactivateUser(1L);
         assertEquals(Status.INACTIVE, user.getStatus());
     }
+
+    @Test
+    void updateUser_duplicateDni_throwsException() {
+        Long userId = 1L;
+        User existingUser = new User();
+        existingUser.setUserId(userId);
+        existingUser.setDni("123");
+
+        UserDTO dto = new UserDTO(userId, "Nombre", "mail@mail.com", "456", null, Role.STUDENT, null);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByDni("456")).thenReturn(Optional.of(new User()));
+
+        Exception ex = assertThrows(UserException.class, () -> userService.updateUser(userId, dto));
+        assertEquals("Ya existe otro usuario con el mismo DNI", ex.getMessage());
+    }
+
+    @Test
+    void updateUser_duplicateEmail_throwsException() {
+        Long userId = 1L;
+        User existingUser = new User();
+        existingUser.setUserId(userId);
+        existingUser.setEmail("original@mail.com");
+
+        UserDTO dto = new UserDTO(userId, "Nombre", "nuevo@mail.com", "123", null, Role.STUDENT, null);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByDni("123")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("nuevo@mail.com")).thenReturn(Optional.of(new User()));
+
+        Exception ex = assertThrows(UserException.class, () -> userService.updateUser(userId, dto));
+        assertEquals("Ya existe otro usuario con el mismo email", ex.getMessage());
+    }
+
+    @Test
+    void updateUser_userNotFound_throwsException() {
+        Long userId = 999L;
+        UserDTO dto = new UserDTO(userId, "Nombre", "mail@mail.com", "123", null, Role.STUDENT, null);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        Exception ex = assertThrows(UserException.class, () -> userService.updateUser(userId, dto));
+        assertEquals("Usuario no encontrado", ex.getMessage());
+    }
+
 }
