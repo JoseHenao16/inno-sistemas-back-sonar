@@ -238,7 +238,7 @@ class TeamServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
-        when(userTeamRepository.existsById(id)).thenReturn(true);
+        when(userTeamRepository.existsById(any(UserTeamId.class))).thenReturn(true);
 
         Exception ex = assertThrows(AlreadyInTeamException.class,
                 () -> teamService.addUserToTeam(userId, teamId, roleInGroup));
