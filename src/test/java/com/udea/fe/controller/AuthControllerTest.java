@@ -83,7 +83,8 @@ public class AuthControllerTest {
         String email = "notfound@example.com";
 
         Authentication auth = mock(Authentication.class);
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, "pass", Collections.emptyList());
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, "pass",
+                Collections.emptyList());
 
         when(auth.isAuthenticated()).thenReturn(true);
         when(auth.getPrincipal()).thenReturn(userDetails);
@@ -95,11 +96,24 @@ public class AuthControllerTest {
     }
 
     @Test
+    void getCurrentUser_Returns401_WhenPrincipalNotUserDetails() {
+        Authentication auth = mock(Authentication.class);
+
+        when(auth.isAuthenticated()).thenReturn(true);
+        when(auth.getPrincipal()).thenReturn("not a user details object");
+
+        ResponseEntity<UserDTO> response = authController.getCurrentUser(auth);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
     void getCurrentUser_Returns200_WhenUserFound() {
         String email = "user@example.com";
 
         Authentication auth = mock(Authentication.class);
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, "pass", Collections.emptyList());
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, "pass",
+                Collections.emptyList());
 
         User mockUser = new User();
         mockUser.setEmail(email);
