@@ -22,18 +22,22 @@ class TaskAssignmentTest {
 
     @Test
     void testConstructorAndFields() {
-        TaskAssignment assignment = new TaskAssignment();
+        Task task = new Task();
+        task.setTaskId(1L);
+        task.setName("Test Task");
 
         TaskAssignmentId id = new TaskAssignmentId();
-        Task task = new Task();
-        task.setTaskId(1L); // supondremos que tienes un método setId()
+        id.setTaskId(1L);
+        id.setAssignedType("USER");
+        id.setAssignedId(2L);
 
+        TaskAssignment assignment = new TaskAssignment();
         assignment.setId(id);
         assignment.setTask(task);
 
-        assertNotNull(assignment.getId());
         assertEquals(1L, assignment.getId().getTaskId());
-        assertEquals(2L, assignment.getId().getUserId());
+        assertEquals("USER", assignment.getId().getAssignedType());
+        assertEquals(2L, assignment.getId().getAssignedId());
         assertEquals(task, assignment.getTask());
     }
 }
