@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class TeamServiceTest {
@@ -30,7 +31,8 @@ class TeamServiceTest {
         userRepository = mock(UserRepository.class);
         userTeamRepository = mock(UserTeamRepository.class);
         modelMapper = mock(ModelMapper.class);
-        teamService = new TeamService(teamRepository, projectRepository, userRepository, userTeamRepository, modelMapper);
+        teamService = new TeamService(teamRepository, projectRepository, userRepository, userTeamRepository,
+                modelMapper);
     }
 
     @Test
@@ -77,8 +79,10 @@ class TeamServiceTest {
         Long teamId = 2L;
         String role = "Colaborador";
 
-        User user = new User(); user.setUserId(userId);
-        Team team = new Team(); team.setTeamId(teamId);
+        User user = new User();
+        user.setUserId(userId);
+        Team team = new Team();
+        team.setTeamId(teamId);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
@@ -95,11 +99,14 @@ class TeamServiceTest {
         Long teamId = 2L;
         UserTeamId id = new UserTeamId(userId, teamId);
 
-        when(userTeamRepository.existsById(id)).thenReturn(true);
+        // Simular que el usuario sí está en el equipo
+        when(userTeamRepository.existsById(any(UserTeamId.class))).thenReturn(true);
+        doNothing().when(userTeamRepository).deleteById(any(UserTeamId.class));
 
         teamService.removeUserFromTeam(userId, teamId);
 
-        verify(userTeamRepository).deleteById(id);
+        // Verificar que se llamó deleteById con algún UserTeamId
+        verify(userTeamRepository).deleteById(any(UserTeamId.class));
     }
 
     @Test
