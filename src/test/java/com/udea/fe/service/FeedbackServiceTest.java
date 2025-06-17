@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class FeedbackServiceTest {
@@ -33,7 +34,8 @@ class FeedbackServiceTest {
         userRepository = mock(UserRepository.class);
         notificationService = mock(NotificationService.class);
         modelMapper = mock(ModelMapper.class);
-        feedbackService = new FeedbackService(feedbackRepository, submissionRepository, userRepository, modelMapper, notificationService);
+        feedbackService = new FeedbackService(feedbackRepository, submissionRepository, userRepository, modelMapper,
+                notificationService);
     }
 
     @Test
@@ -153,5 +155,39 @@ class FeedbackServiceTest {
 
         List<FeedbackDTO> result = feedbackService.getFeedbacksBySubmissionId(1L);
         assertEquals(1, result.size());
+    }
+
+    @Test
+    void createFeedback_withParentFeedback_success() {
+        // Datos de entrada
+        FeedbackDTO dto = new FeedbackDTO();
+        dto.setSubmissionId(1L);
+        dto.setCreatedById(2L);
+        dto.setComment("Comentario");
+        dto.setRating(4);
+        dto.setParentFeedbackId(3L);
+
+        Submission submission = new Submission();
+        User user = new User();
+        user.setUserId(2L);
+        submission.setUser(user); // necesario para la notificación
+
+        Feedback parent = new Feedback();
+        parent.setFeedbackId(3L);
+
+        Feedback saved = new Feedback();
+        saved.setFeedbackId(10L);
+
+        when(submissionRepository.findById(1L)).thenReturn(Optional.of(submission));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
+        when(feedbackRepository.findById(3L)).thenReturn(Optional.of(parent));
+        when(feedbackRepository.save(any())).thenReturn(saved);
+        when(modelMapper.map(any(Feedback.class), eq(FeedbackDTO.class))).thenReturn(dto);
+
+        FeedbackDTO result = feedbackService.createFeedback(dto);
+
+        assertNotNull(result);
+        verify(feedbackRepository).save(any(Feedback.class));
+        verify(notificationService).createNotification(any(NotificationDTO.class));
     }
 }
