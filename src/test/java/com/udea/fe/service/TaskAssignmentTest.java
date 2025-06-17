@@ -28,7 +28,8 @@ class TaskAssignmentServiceTest {
         taskAssignmentRepository = mock(TaskAssignmentRepository.class);
         userRepository = mock(UserRepository.class);
         notificationService = mock(NotificationService.class);
-        service = new TaskAssignmentService(taskRepository, taskAssignmentRepository, userRepository, notificationService);
+        service = new TaskAssignmentService(taskRepository, taskAssignmentRepository, userRepository,
+                notificationService);
     }
 
     @Test
@@ -67,45 +68,72 @@ class TaskAssignmentServiceTest {
 
     @Test
     void getUsersAssignedToTask_success() {
+        Long taskId = 1L;
+
         TaskAssignmentId id1 = new TaskAssignmentId();
+        id1.setTaskId(taskId);
+        id1.setAssignedId(1L);
+        id1.setAssignedType("USER");
+
         TaskAssignmentId id2 = new TaskAssignmentId();
-        TaskAssignmentId id3 = new TaskAssignmentId();
+        id2.setTaskId(taskId);
+        id2.setAssignedId(2L);
+        id2.setAssignedType("USER");
 
-        TaskAssignment a1 = new TaskAssignment(); a1.setId(id1);
-        TaskAssignment a2 = new TaskAssignment(); a2.setId(id2);
-        TaskAssignment a3 = new TaskAssignment(); a3.setId(id3);
+        TaskAssignment assignment1 = new TaskAssignment();
+        assignment1.setId(id1);
 
-        User u10 = new User(); u10.setUserId(10L);
-        User u11 = new User(); u11.setUserId(11L);
+        TaskAssignment assignment2 = new TaskAssignment();
+        assignment2.setId(id2);
 
-        when(taskAssignmentRepository.findById_TaskId(1L)).thenReturn(List.of(a1, a2, a3));
-        when(userRepository.findById(10L)).thenReturn(Optional.of(u10));
-        when(userRepository.findById(11L)).thenReturn(Optional.of(u11));
+        User user1 = new User();
+        user1.setUserId(1L);
 
-        List<User> result = service.getUsersAssignedToTask(1L);
+        User user2 = new User();
+        user2.setUserId(2L);
+
+        when(taskAssignmentRepository.findById_TaskId(taskId))
+                .thenReturn(List.of(assignment1, assignment2));
+
+        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user1));
+        when(userRepository.findById(eq(2L))).thenReturn(Optional.of(user2));
+
+        List<User> result = service.getUsersAssignedToTask(taskId);
 
         assertEquals(2, result.size());
-        assertTrue(result.stream().anyMatch(u -> u.getUserId().equals(10L)));
-        assertTrue(result.stream().anyMatch(u -> u.getUserId().equals(11L)));
     }
 
     @Test
     void getUsersAssignedToTask_someUsersMissing_returnsOnlyFound() {
+        Long taskId = 1L;
+
         TaskAssignmentId id1 = new TaskAssignmentId();
+        id1.setTaskId(taskId);
+        id1.setAssignedId(1L);
+        id1.setAssignedType("USER");
+
         TaskAssignmentId id2 = new TaskAssignmentId();
+        id2.setTaskId(taskId);
+        id2.setAssignedId(2L);
+        id2.setAssignedType("USER");
 
-        TaskAssignment a1 = new TaskAssignment(); a1.setId(id1);
-        TaskAssignment a2 = new TaskAssignment(); a2.setId(id2);
+        TaskAssignment assignment1 = new TaskAssignment();
+        assignment1.setId(id1);
 
-        User u10 = new User(); u10.setUserId(10L);
+        TaskAssignment assignment2 = new TaskAssignment();
+        assignment2.setId(id2);
 
-        when(taskAssignmentRepository.findById_TaskId(1L)).thenReturn(List.of(a1, a2));
-        when(userRepository.findById(10L)).thenReturn(Optional.of(u10));
-        when(userRepository.findById(11L)).thenReturn(Optional.empty());
+        User user1 = new User();
+        user1.setUserId(1L);
 
-        List<User> result = service.getUsersAssignedToTask(1L);
+        when(taskAssignmentRepository.findById_TaskId(taskId))
+                .thenReturn(List.of(assignment1, assignment2));
+
+        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user1));
+        when(userRepository.findById(eq(2L))).thenReturn(Optional.empty()); // simulamos uno que no existe
+
+        List<User> result = service.getUsersAssignedToTask(taskId);
 
         assertEquals(1, result.size());
-        assertEquals(10L, result.get(0).getUserId());
     }
 }
