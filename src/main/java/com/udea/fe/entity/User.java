@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
     private String name;
@@ -32,4 +32,8 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    public void setFullName(String fullName) {
+        this.name = fullName;
+    }
 }
