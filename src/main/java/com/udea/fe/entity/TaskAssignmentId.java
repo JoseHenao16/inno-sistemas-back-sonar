@@ -15,7 +15,4 @@ public class TaskAssignmentId implements Serializable {
     private Long taskId;
     private String assignedType;
     private Long assignedId;
-    public Long getUserId() {
-        throw new UnsupportedOperationException("Unimplemented method 'getUserId'");
-    }
 }
