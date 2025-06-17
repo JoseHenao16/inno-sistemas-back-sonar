@@ -159,7 +159,7 @@ class FeedbackServiceTest {
 
     @Test
     void createFeedback_withParentFeedback_success() {
-        // Datos de entrada
+        // Arrange: preparar datos de entrada
         FeedbackDTO dto = new FeedbackDTO();
         dto.setSubmissionId(1L);
         dto.setCreatedById(2L);
@@ -175,18 +175,29 @@ class FeedbackServiceTest {
         Feedback parent = new Feedback();
         parent.setFeedbackId(3L);
 
+        Feedback feedback = new Feedback(); // ← Este es el que estaba faltando
         Feedback saved = new Feedback();
         saved.setFeedbackId(10L);
+        saved.setSubmission(submission);
+        saved.setCreatedBy(user);
 
+        // Mocking
+        when(modelMapper.map(dto, Feedback.class)).thenReturn(feedback);
         when(submissionRepository.findById(1L)).thenReturn(Optional.of(submission));
         when(userRepository.findById(2L)).thenReturn(Optional.of(user));
         when(feedbackRepository.findById(3L)).thenReturn(Optional.of(parent));
         when(feedbackRepository.save(any())).thenReturn(saved);
-        when(modelMapper.map(any(Feedback.class), eq(FeedbackDTO.class))).thenReturn(dto);
+        when(modelMapper.map(saved, FeedbackDTO.class)).thenReturn(dto);
 
+        // Act
         FeedbackDTO result = feedbackService.createFeedback(dto);
 
+        // Assert
         assertNotNull(result);
+        verify(modelMapper).map(dto, Feedback.class);
+        verify(submissionRepository).findById(1L);
+        verify(userRepository).findById(2L);
+        verify(feedbackRepository).findById(3L);
         verify(feedbackRepository).save(any(Feedback.class));
         verify(notificationService).createNotification(any(NotificationDTO.class));
     }
