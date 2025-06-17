@@ -194,4 +194,55 @@ class TeamServiceTest {
         assertEquals("Equipo no encontrado con ID: 1", ex.getMessage());
     }
 
+    @Test
+    void getUsersByTeam_success() {
+        Long teamId = 1L;
+        Team team = new Team();
+        team.setTeamId(teamId);
+
+        User user = new User();
+        user.setUserId(1L);
+        UserTeam userTeam = new UserTeam();
+        userTeam.setTeam(team);
+        userTeam.setUser(user);
+
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        when(userTeamRepository.findByTeam(team)).thenReturn(List.of(userTeam));
+
+        List<UserTeam> result = teamService.getUsersByTeam(teamId);
+
+        assertEquals(1, result.size());
+        assertEquals(user.getUserId(), result.get(0).getUser().getUserId());
+    }
+
+    @Test
+    void getUsersByTeam_teamNotFound_throws() {
+        Long teamId = 1L;
+        when(teamRepository.findById(teamId)).thenReturn(Optional.empty());
+
+        Exception ex = assertThrows(TeamNotFoundException.class, () -> teamService.getUsersByTeam(teamId));
+        assertEquals("Equipo no encontrado", ex.getMessage());
+    }
+
+    @Test
+    void addUserToTeam_alreadyInTeam_throws() {
+        Long userId = 1L;
+        Long teamId = 2L;
+        String roleInGroup = "Líder";
+        UserTeamId id = new UserTeamId(userId, teamId);
+
+        User user = new User();
+        user.setUserId(userId);
+        Team team = new Team();
+        team.setTeamId(teamId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        when(userTeamRepository.existsById(id)).thenReturn(true);
+
+        Exception ex = assertThrows(AlreadyInTeamException.class,
+                () -> teamService.addUserToTeam(userId, teamId, roleInGroup));
+
+        assertEquals("El usuario ya está en el equipo", ex.getMessage());
+    }
 }
