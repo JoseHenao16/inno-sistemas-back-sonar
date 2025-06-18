@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class FeedbackResponseServiceTest {
@@ -83,12 +85,16 @@ class FeedbackResponseServiceTest {
         dto.setComment("Respuesta");
 
         Feedback feedback = new Feedback();
+
+        when(modelMapper.map(any(FeedbackResponseDTO.class), eq(FeedbackResponse.class)))
+                .thenReturn(new FeedbackResponse());
         when(feedbackRepository.findById(1L)).thenReturn(Optional.of(feedback));
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         FeedbackResponseNotFoundException ex = assertThrows(
                 FeedbackResponseNotFoundException.class,
-                () -> service.createFeedbackResponse(dto));
+                () -> service.createFeedbackResponse(dto) // <- usa `service`, no `feedbackResponseService`
+        );
         assertEquals("Usuario no encontrado con id: 99", ex.getMessage());
     }
 
