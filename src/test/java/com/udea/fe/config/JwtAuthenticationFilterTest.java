@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +16,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class JwtAuthenticationFilterTest {
@@ -87,5 +89,49 @@ class JwtAuthenticationFilterTest {
         verify(jwtService).extractUsername(token);
         verify(jwtService).isTokenValid(token, email);
         assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void doFilterInternal_authHeaderWithoutBearer_doesNotAuthenticate() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Basic token123");
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void doFilterInternal_userEmailIsNull_doesNotAuthenticate() throws Exception {
+        String token = "fake.jwt.token";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(jwtService.extractUsername(token)).thenReturn(null); // ← Aquí está la diferencia
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        verify(jwtService).extractUsername(token);
+        verify(filterChain).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void doFilterInternal_authenticationAlreadySet_skipsSettingAgain() throws Exception {
+        String token = "valid.jwt.token";
+        String email = "user@mail.com";
+
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(jwtService.extractUsername(token)).thenReturn(email);
+
+        // Set an existing authentication (simula que ya está autenticado)
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("user", null, Collections.emptyList()));
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        verify(jwtService).extractUsername(token);
+        verify(filterChain).doFilter(request, response);
+        // No debe volver a cargar userDetails ni validar el token
+        verify(userDetailsService, never()).loadUserByUsername(any());
+        verify(jwtService, never()).isTokenValid(any(), any());
     }
 }

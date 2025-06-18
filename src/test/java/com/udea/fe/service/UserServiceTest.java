@@ -279,6 +279,6 @@ class UserServiceTest {
         assertEquals(Role.TEACHER, existingUser.getRole());
         assertEquals(Status.INACTIVE, existingUser.getStatus());
         assertEquals("claveCifrada", existingUser.getPassword());
-        assertEquals("nuevo@mail.com", resultado.getEmail()); // validación extra
+        assertEquals("nuevo@mail.com", resultado.getEmail());
     }
 }
