@@ -134,4 +134,19 @@ class WorkspaceServiceTest {
         when(workspaceRepository.existsById(1L)).thenReturn(false);
         assertThrows(WorkspaceNotFoundException.class, () -> workspaceService.deleteWorkspace(1L));
     }
-} 
+
+    @Test
+    void createWorkspace_projectNotFound_throwsException() {
+        // Arrange
+        WorkspaceDTO dto = new WorkspaceDTO();
+        dto.setProjectId(999L); // Un ID que no existe
+
+        when(projectRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ProjectNotFoundException ex = assertThrows(
+                ProjectNotFoundException.class,
+                () -> workspaceService.createWorkspace(dto));
+        assertEquals("Proyecto no encontrado con id: 999", ex.getMessage());
+    }
+}
