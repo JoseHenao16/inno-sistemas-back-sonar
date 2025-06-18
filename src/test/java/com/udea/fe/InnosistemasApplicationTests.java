@@ -8,8 +8,13 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 class InnosistemasApplicationTests {
 
-	@Test
-	void contextLoads() {
-		System.out.println(">>>>> Perfil de prueba activo correctamente.");
-	}
+    @Test
+    void contextLoads() {
+        System.out.println(">>>>> Perfil de prueba activo correctamente.");
+    }
+
+    @Test
+    void mainMethod_runsWithoutErrors() {
+        InnosistemasApplication.main(new String[]{});
+    }
 }
