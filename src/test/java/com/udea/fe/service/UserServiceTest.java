@@ -245,4 +245,40 @@ class UserServiceTest {
         Exception ex = assertThrows(UserException.class, () -> userService.updateUser(1L, dto));
         assertEquals("Ya existe otro usuario con el mismo DNI", ex.getMessage());
     }
+
+    @Test
+    void updateUser_actualizaTodosLosCamposIncluyendoPassword() {
+        Long userId = 1L;
+
+        UserDTO dto = new UserDTO();
+        dto.setName("Nuevo Nombre");
+        dto.setEmail("nuevo@mail.com");
+        dto.setDni("99999");
+        dto.setRole(Role.TEACHER);
+        dto.setStatus(Status.INACTIVE);
+        dto.setPassword("nuevaClave");
+
+        User existingUser = new User();
+        existingUser.setName("Viejo");
+        existingUser.setEmail("viejo@mail.com");
+        existingUser.setDni("11111");
+        existingUser.setRole(Role.STUDENT);
+        existingUser.setStatus(Status.ACTIVE);
+        existingUser.setPassword("viejaClave");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.encode("nuevaClave")).thenReturn("claveCifrada");
+        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(modelMapper.map(any(User.class), eq(UserDTO.class))).thenReturn(dto);
+
+        UserDTO resultado = userService.updateUser(userId, dto);
+
+        assertEquals("Nuevo Nombre", existingUser.getName());
+        assertEquals("nuevo@mail.com", existingUser.getEmail());
+        assertEquals("99999", existingUser.getDni());
+        assertEquals(Role.TEACHER, existingUser.getRole());
+        assertEquals(Status.INACTIVE, existingUser.getStatus());
+        assertEquals("claveCifrada", existingUser.getPassword());
+        assertEquals("nuevo@mail.com", resultado.getEmail()); // validación extra
+    }
 }
