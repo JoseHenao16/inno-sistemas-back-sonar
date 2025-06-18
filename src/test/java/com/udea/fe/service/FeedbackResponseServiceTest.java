@@ -36,8 +36,7 @@ class FeedbackResponseServiceTest {
                 feedbackResponseRepository,
                 feedbackRepository,
                 userRepository,
-                modelMapper
-        );
+                modelMapper);
     }
 
     @Test
@@ -71,8 +70,7 @@ class FeedbackResponseServiceTest {
 
         FeedbackResponseNotFoundException ex = assertThrows(
                 FeedbackResponseNotFoundException.class,
-                () -> service.createFeedbackResponse(dto)
-        );
+                () -> service.createFeedbackResponse(dto));
 
         assertEquals("Feedback no encontrado con id: 1", ex.getMessage());
     }
@@ -81,16 +79,17 @@ class FeedbackResponseServiceTest {
     void createFeedbackResponse_userNotFound_throwsException() {
         FeedbackResponseDTO dto = new FeedbackResponseDTO();
         dto.setFeedbackId(1L);
-        dto.setCreatedById(2L);
-        when(feedbackRepository.findById(1L)).thenReturn(Optional.of(new Feedback()));
-        when(userRepository.findById(2L)).thenReturn(Optional.empty());
+        dto.setCreatedById(99L);
+        dto.setComment("Respuesta");
+
+        Feedback feedback = new Feedback();
+        when(feedbackRepository.findById(1L)).thenReturn(Optional.of(feedback));
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         FeedbackResponseNotFoundException ex = assertThrows(
                 FeedbackResponseNotFoundException.class,
-                () -> service.createFeedbackResponse(dto)
-        );
-
-        assertEquals("Usuario no encontrado con id: 2", ex.getMessage());
+                () -> service.createFeedbackResponse(dto));
+        assertEquals("Usuario no encontrado con id: 99", ex.getMessage());
     }
 
     @Test
@@ -112,8 +111,7 @@ class FeedbackResponseServiceTest {
 
         assertThrows(
                 FeedbackResponseNotFoundException.class,
-                () -> service.getFeedbackResponseById(1L)
-        );
+                () -> service.getFeedbackResponseById(1L));
     }
 
     @Test
@@ -153,8 +151,7 @@ class FeedbackResponseServiceTest {
 
         assertThrows(
                 FeedbackResponseNotFoundException.class,
-                () -> service.updateFeedbackResponse(1L, dto)
-        );
+                () -> service.updateFeedbackResponse(1L, dto));
     }
 
     @Test
@@ -170,7 +167,6 @@ class FeedbackResponseServiceTest {
 
         assertThrows(
                 FeedbackResponseNotFoundException.class,
-                () -> service.deleteFeedbackResponse(1L)
-        );
+                () -> service.deleteFeedbackResponse(1L));
     }
 }
