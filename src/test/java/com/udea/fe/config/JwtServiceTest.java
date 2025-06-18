@@ -59,8 +59,8 @@ class JwtServiceTest {
 
     @Test
     void isTokenValid_expiredToken_returnsFalse() {
-        // Generar un token expirado manualmente
-        ReflectionTestUtils.setField(jwtService, "jwtExpiration", -1000L); // token expirado desde el inicio
+        // Generar un token expirado manualmente.
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", -5000L); // token expirado desde el inicio
 
         String token = jwtService.generateToken(user);
         boolean isValid = jwtService.isTokenValid(token, user.getEmail());
