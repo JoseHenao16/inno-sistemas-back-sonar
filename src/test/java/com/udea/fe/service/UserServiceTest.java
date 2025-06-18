@@ -189,6 +189,44 @@ class UserServiceTest {
 
     @Test
     void deleteUser_success() {
-        // Implement deleteUser test or remove if not needed
+        User user = new User();
+        user.setUserId(1L);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        userService.deleteUser(1L);
+
+        verify(userRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteUser_userNotFound_throwsException() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception ex = assertThrows(UserException.class, () -> userService.deleteUser(1L));
+        assertEquals("Usuario no encontrado", ex.getMessage());
+    }
+
+    @Test
+    void deactivateUser_success() {
+        User user = new User();
+        user.setUserId(1L);
+        user.setStatus(Status.ACTIVE);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(user)).thenReturn(user);
+
+        userService.deactivateUser(1L);
+
+        assertEquals(Status.INACTIVE, user.getStatus());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void deactivateUser_userNotFound_throwsException() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception ex = assertThrows(UserException.class, () -> userService.deactivateUser(1L));
+        assertEquals("Usuario no encontrado", ex.getMessage());
     }
 }
