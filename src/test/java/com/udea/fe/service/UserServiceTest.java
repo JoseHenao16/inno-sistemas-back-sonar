@@ -229,4 +229,20 @@ class UserServiceTest {
         Exception ex = assertThrows(UserException.class, () -> userService.deactivateUser(1L));
         assertEquals("Usuario no encontrado", ex.getMessage());
     }
+
+    @Test
+    void updateUser_cambioDniYaExistente_throwsException() {
+        UserDTO dto = new UserDTO();
+        dto.setDni("nuevoDNI");
+
+        User existingUser = new User();
+        existingUser.setDni("viejoDNI");
+        existingUser.setEmail("same@mail.com");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByDni("nuevoDNI")).thenReturn(Optional.of(new User()));
+
+        Exception ex = assertThrows(UserException.class, () -> userService.updateUser(1L, dto));
+        assertEquals("Ya existe otro usuario con el mismo DNI", ex.getMessage());
+    }
 }
