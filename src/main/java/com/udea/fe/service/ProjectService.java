@@ -1,10 +1,17 @@
 package com.udea.fe.service;
 
 import com.udea.fe.DTO.ProjectDTO;
-import com.udea.fe.entity.*;
-import com.udea.fe.exception.*;
+import com.udea.fe.entity.Project;
+import com.udea.fe.entity.ProjectStatus;
+import com.udea.fe.entity.User;
+import com.udea.fe.entity.UserTeam;
+import com.udea.fe.exception.InvalidProjectDataException;
+import com.udea.fe.exception.ProjectNotFoundException;
+import com.udea.fe.exception.UserNotFoundException;
 import com.udea.fe.mapper.ProjectMapper;
-import com.udea.fe.repository.*;
+import com.udea.fe.repository.ProjectRepository;
+import com.udea.fe.repository.UserRepository;
+import com.udea.fe.repository.UserTeamRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -27,99 +34,101 @@ public class ProjectService {
     private final ProjectMapper projectMapper;
 
     public ProjectDTO createProject(ProjectDTO dto) {
-        validarDatos(dto);
-        User createdBy = userRepository.findById(dto.getCreatedById())
-                .orElseThrow(() -> new UserNotFoundException("Usuario creador no encontrado"));
-
-        Project project = modelMapper.map(dto, Project.class);
-        project.setCreatedBy(createdBy);
-        project.setStatus(ProjectStatus.IN_PROGRESS);
-
-        return modelMapper.map(projectRepository.save(project), ProjectDTO.class);
+        validarDatosProyecto(dto);
+        User creador = buscarCreador(dto.getCreatedById());
+        Project proyecto = modelMapper.map(dto, Project.class);
+        proyecto.setCreatedBy(creador);
+        proyecto.setStatus(ProjectStatus.IN_PROGRESS);
+        return modelMapper.map(projectRepository.save(proyecto), ProjectDTO.class);
     }
 
-    private void validarDatos(ProjectDTO dto) {
-        if (isNuloOVacio(dto.getName())) {
+    private void validarDatosProyecto(ProjectDTO dto) {
+        if (isNullOrBlank(dto.getName())) {
             throw new InvalidProjectDataException("El nombre del proyecto es obligatorio");
         }
-        if (dto.getStartDate() == null || dto.getEndDate() == null) {
-            throw new InvalidProjectDataException("Las fechas de inicio y fin son obligatorias");
+        if (dto.getStartDate() == null) {
+            throw new InvalidProjectDataException("La fecha de inicio es obligatoria");
+        }
+        if (dto.getEndDate() == null) {
+            throw new InvalidProjectDataException("La fecha de fin es obligatoria");
         }
         if (dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new InvalidProjectDataException("La fecha de finalización no puede ser anterior a la de inicio");
+            throw new InvalidProjectDataException("La fecha de fin no puede ser anterior a la de inicio");
         }
         if (dto.getCreatedById() == null) {
             throw new InvalidProjectDataException("Debe especificarse el ID del creador del proyecto");
         }
     }
 
-    private boolean isNuloOVacio(String valor) {
-        return valor == null || valor.trim().isEmpty();
+    private boolean isNullOrBlank(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+    private User buscarCreador(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario creador no encontrado"));
     }
 
     public ProjectDTO getProjectById(Long id) {
         return projectRepository.findById(id)
-                .map(p -> modelMapper.map(p, ProjectDTO.class))
+                .map(project -> modelMapper.map(project, ProjectDTO.class))
                 .orElseThrow(() -> new ProjectNotFoundException("Proyecto no encontrado con id: " + id));
     }
 
     public List<ProjectDTO> getAllProjects() {
         return projectRepository.findAll().stream()
-                .map(p -> modelMapper.map(p, ProjectDTO.class))
+                .map(project -> modelMapper.map(project, ProjectDTO.class))
                 .toList();
     }
 
     public ProjectDTO updateProject(Long id, ProjectDTO dto) {
-        return projectRepository.findById(id).map(existing -> {
-            ProjectStatus original = existing.getStatus();
-            modelMapper.map(dto, existing);
-            existing.setStatus(original);
-            return modelMapper.map(projectRepository.save(existing), ProjectDTO.class);
-        }).orElseThrow(() -> new ProjectNotFoundException("Proyecto no encontrado"));
+        return projectRepository.findById(id)
+                .map(existing -> {
+                    ProjectStatus statusOriginal = existing.getStatus();
+                    modelMapper.map(dto, existing);
+                    existing.setStatus(statusOriginal);
+                    return modelMapper.map(projectRepository.save(existing), ProjectDTO.class);
+                })
+                .orElseThrow(() -> new ProjectNotFoundException("Proyecto no encontrado"));
     }
 
     public ProjectDTO changeProjectStatus(Long id, ProjectStatus nuevoEstado) {
-        Project project = projectRepository.findById(id)
+        Project proyecto = projectRepository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException("Proyecto no encontrado con id: " + id));
+        validarTransicionEstado(proyecto.getStatus(), nuevoEstado);
 
-        validarTransicionEstado(project.getStatus(), nuevoEstado);
-        aplicarCambioDeEstado(project, nuevoEstado);
-
-        return modelMapper.map(projectRepository.save(project), ProjectDTO.class);
-    }
-
-    private void aplicarCambioDeEstado(Project project, ProjectStatus nuevoEstado) {
-        project.setStatus(nuevoEstado);
-        if (nuevoEstado == ProjectStatus.COMPLETED || nuevoEstado == ProjectStatus.CANCELED) {
-            if (project.getEndDate() == null) {
-                project.setEndDate(LocalDate.now());
-            }
+        proyecto.setStatus(nuevoEstado);
+        if (requiereFechaFin(nuevoEstado, proyecto)) {
+            proyecto.setEndDate(LocalDate.now());
         }
+
+        return modelMapper.map(projectRepository.save(proyecto), ProjectDTO.class);
     }
 
     private void validarTransicionEstado(ProjectStatus actual, ProjectStatus nuevo) {
         if (actual == nuevo) {
-            throw new IllegalStateException("El proyecto ya está en estado " + nuevo);
-        }
-        if ((actual == ProjectStatus.COMPLETED || actual == ProjectStatus.CANCELED)
-                && nuevo == ProjectStatus.IN_PROGRESS) {
-            throw new IllegalStateException("No se puede reactivar un proyecto " + actual.name().toLowerCase());
+            throw new IllegalStateException("Ya está en estado " + nuevo);
         }
         if (actual == ProjectStatus.CANCELED && nuevo == ProjectStatus.COMPLETED) {
-            throw new IllegalStateException("No se puede finalizar un proyecto abandonado");
+            throw new IllegalStateException("No se puede finalizar un proyecto cancelado");
         }
+        if ((actual == ProjectStatus.CANCELED || actual == ProjectStatus.COMPLETED) && nuevo == ProjectStatus.IN_PROGRESS) {
+            throw new IllegalStateException("No se puede reactivar un proyecto " + actual.name().toLowerCase());
+        }
+    }
+
+    private boolean requiereFechaFin(ProjectStatus nuevoEstado, Project proyecto) {
+        return (nuevoEstado == ProjectStatus.COMPLETED && proyecto.getEndDate() == null)
+                || nuevoEstado == ProjectStatus.CANCELED;
     }
 
     public List<ProjectDTO> getProjectsByUserId(Long userId) {
-        Set<Project> teamProjects = userTeamRepository.findByIdUserId(userId).stream()
+        List<UserTeam> equipos = userTeamRepository.findByIdUserId(userId);
+        Set<Project> proyectosEquipo = equipos.stream()
                 .map(ut -> ut.getTeam().getProject())
                 .collect(Collectors.toSet());
-
-        teamProjects.addAll(projectRepository.findByCreatedByUserId(userId));
-
-        return teamProjects.stream()
-                .map(projectMapper::toDTO)
-                .toList();
+        List<Project> creados = projectRepository.findByCreatedByUserId(userId);
+        proyectosEquipo.addAll(creados);
+        return proyectosEquipo.stream().map(projectMapper::toDTO).toList();
     }
 }
-
